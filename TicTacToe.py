@@ -17,6 +17,5 @@ class TicTacToe :
             if i < self.size -1:
                 print("-" * (self.size * 2 - 1))  # Print a separator line
 
-
-game = TicTacToe(5)
-game.print_board()
+    def make_move(self, row, col):
+        index = row * self.size + col
