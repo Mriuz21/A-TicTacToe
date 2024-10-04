@@ -16,6 +16,7 @@ class TicTacToe :
             print("|".join(rows))
             if i < self.size -1:
                 print("-" * (self.size * 2 - 1))  # Print a separator line
+<<<<<<< HEAD
     def make_move(self,row,col):
         index = row * self.size + col
         if self.board[index] is None:
@@ -29,3 +30,8 @@ game = TicTacToe(3)
 game.print_board()
 
 
+=======
+
+    def make_move(self, row, col):
+        index = row * self.size + col
+>>>>>>> 2eabd5e4ba159efeb3d00522d61c792e137e3686
