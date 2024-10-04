@@ -16,7 +16,16 @@ class TicTacToe :
             print("|".join(rows))
             if i < self.size -1:
                 print("-" * (self.size * 2 - 1))  # Print a separator line
-
-
-game = TicTacToe(5)
+    def make_move(self,row,col):
+        index = row * self.size + col
+        if self.board[index] is None:
+            self.board[index] = self.currentPlayer
+            if self.currentPlayer == 'X':
+                self.currentPlayer = '0'
+            else:
+                self.currentPlayer = 'X'    
+        else: print("Invalid cell")
+game = TicTacToe(3)
 game.print_board()
+
+
