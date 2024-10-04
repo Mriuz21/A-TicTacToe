@@ -1,6 +1,7 @@
 import pygame
 import os
 import sys
+import copy
 
 #Game Settings
 board_size = 3
@@ -196,5 +197,72 @@ def main():
                     game.running = False
         pygame.display.update()
     pygame.quit()
+
+
+
+class AStar:
+    def __init__(self, board, player):
+        self.board = copy.deepcopy(board)
+        self.player = player
+        self.opponent = "O" if player == "X" else "X"
+
+    def heuristic(self, board):
+        score = 0
+        # Scoring logic stays the same
+        for row in board:
+            if row.count(self.player) == 2 and row.count(None) == 1:
+                score += 10
+            if row.count(self.opponent) == 2 and row.count(None) == 1:
+                score -= 10
+
+        for col in range(len(board)):
+            column = [board[row][col] for row in range(len(board))]
+            if column.count(self.player) == 2 and column.count(None) == 1:
+                score += 10
+            if column.count(self.opponent) == 2 and column.count(None) == 1:
+                score -= 10
+
+        diag1 = [board[i][i] for i in range(len(board))]
+        diag2 = [board[i][len(board)-1-i] for i in range(len(board))]
+        if diag1.count(self.player) == 2 and diag1.count(None) == 1:
+            score += 10
+        if diag1.count(self.opponent) == 2 and diag1.count(None) == 1:
+            score -= 10
+        if diag2.count(self.player) == 2 and diag2.count(None) == 1:
+            score += 10
+        if diag2.count(self.opponent) == 2 and diag2.count(None) == 1:
+            score -= 10
+
+        return score
+    
+    def get_possible_moves(self, board):
+        moves = []
+        for row in range(len(board)):
+            for col in range(len(board[row])):
+                if board[row][col] is None:  # Only empty cells
+                    moves.append((row, col))
+        return moves
+
+    def find_best_move(self):
+        best_move = None
+        best_score = -float('inf')
+
+        for move in self.get_possible_moves(self.board):
+            row, col = move
+            new_board = copy.deepcopy(self.board)
+            new_board[row][col] = self.player  # AI places its mark
+
+            g = 1  # Cost to reach this node (for A*)
+            h = self.heuristic(new_board)  # Heuristic score
+
+            f = g + h 
+
+            if f > best_score:
+                best_score = f
+                best_move = move
+
+        return best_move
+
+
 if __name__ == "__main__":
     main()
