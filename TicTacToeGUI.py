@@ -86,7 +86,6 @@ class Game:
 
         if(x_pos_start <= mouse_pos[0] <= x_pos_end and
            y_pos_start <= mouse_pos[1] <= y_pos_end):
-            #Get col and row for cell
             col = int((mouse_pos[0] - x_pos_start) // self.cell_size)
             row = int((mouse_pos[1] - y_pos_start) // self.cell_size)
 
@@ -135,21 +134,18 @@ class Game:
         pygame.display.flip()
     
     def check_winner(self):
-        #Rows
         for row in self.board:
             if all(cell == 'X' for cell in row):
                 return 'X'
             if all(cell == 'O' for cell in row):
                 return 'O'
 
-        #Columns
         for col in range(self.board_size):
             if all(self.board[row][col] == 'X' for row in range(self.board_size)):
                 return 'X'
             if all(self.board[row][col] == 'O' for row in range(self.board_size)):
                 return 'O'
 
-        #Diagonals
         if all(self.board[i][i] == 'X' for i in range(self.board_size)):
             return 'X'
         if all(self.board[i][i] == 'O' for i in range(self.board_size)):
@@ -159,13 +155,11 @@ class Game:
         if all(self.board[i][self.board_size - 1 - i] == 'O' for i in range(self.board_size)):
             return 'O'
 
-        #Draw if all cells are occupied
         if all(cell is not None for row in self.board for cell in row):
             return 'Draw'
         return None
     
     def restart_game(self):
-        # Reset the board
         self.board = [[None for _ in range(self.board_size)] for _ in range(self.board_size)]
         self.current_player = "X"
         self.winner = None
@@ -174,40 +168,51 @@ class Game:
         self.draw_grid(self.cell_size)
         pygame.display.flip()
 
-def main():
-    game = Game(background_color=RED, board_size=3)
-    
-    game.draw_grid(game.cell_size)
-    game.display_text("Tic Tac Toe", game.screen_width // 2, 75, game.title_font)
-    while game.running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                game.running = False
-            elif event.type == pygame.MOUSEBUTTONDOWN and game.winner == None:
-                mouse_pos = pygame.mouse.get_pos()
-                clicked_cell = game.get_clicked_cell(mouse_pos)
-                if clicked_cell:
-                    row, col = clicked_cell
-                    if game.board[row][col] == None:
-                        game.draw_move(row, col) 
-                    print(f"Cell clicked: {clicked_cell}")
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_r:
-                    game.restart_game()
-                elif event.key == pygame.K_ESCAPE:
-                    game.running = False
-        pygame.display.update()
-    pygame.quit()
-
 class AStar:
-    def __init__(self, board, player):
+    def __init__(self, board, board_size, ai):
         self.board = copy.deepcopy(board)
-        self.player = player
-        self.opponent = "O" if player == "X" else "X"
+        self.ai = ai
+        self.player = "O" if ai == "X" else "X"
+        self.board_size = board_size
 
     def heuristic(self, board, row, col):
-        pass
-    
+        board[row][col] = self.ai
+        if self.is_winner(board, self.ai):
+            board[row][col] = None
+            return 100
+        
+        board[row][col] = self.player
+        if self.is_winner(board, self.player):
+            board[row][col] = None
+            return 90
+
+        board[row][col] = None
+
+        if (row, col) == (self.board_size // 2, self.board_size // 2):
+            return 50
+
+        corners = [(0, 0), (0, self.board_size - 1), (self.board_size - 1, 0), (self.board_size - 1, self.board_size - 1)]
+        if (row, col) in corners:
+            return 40
+
+        return 30
+
+    def is_winner(self, board, player):
+        for row in board:
+            if all(cell == player for cell in row):
+                return True
+
+        for col in range(len(board)):
+            if all(board[row][col] == player for row in range(len(board))):
+                return True
+
+        if all(board[i][i] == player for i in range(len(board))):
+            return True
+        if all(board[i][len(board) - 1 - i] == player for i in range(len(board))):
+            return True
+
+        return False
+
     def get_possible_moves(self, board):
         moves = []
         for row in range(len(board)):
@@ -219,23 +224,17 @@ class AStar:
     def find_best_move(self):
         best_move = None
         best_score = -float('inf')
-        count = 0
-        scores = [0 for i in self.get_possible_moves(self.board)]
 
         for move in self.get_possible_moves(self.board):
             row, col = move
-            new_board = copy.deepcopy(self.board)
-            new_board[row][col] = self.player
 
-            g = 1 
-            h = self.heuristic(new_board, row, col)
+            h = self.heuristic(self.board, row, col)
 
-            f = g + h 
+            if h > best_score:
+                best_score = h
+                best_move = move
 
-            scores[count] = f
+            if best_score == 100:
+                break
 
-        return max(scores)
-
-
-if __name__ == "__main__":
-    main()
+        return best_move
