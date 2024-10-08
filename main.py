@@ -1,6 +1,6 @@
 import pygame
 import os
-from TicTacToeGUI import Game, AStar  # Import the Game class from TicTacToeGUI.py
+from TicTacToeGUI import Game, AStar  
 
 # Game Settings
 board_size = 3
@@ -11,7 +11,7 @@ RED = (200, 84, 75)
 class Main:
     def __init__(self):
         self.game = Game(background_color=RED, board_size=board_size)
-        self.ai = AStar(self.game.board, "O")  # Assuming 'O' is the AI player
+        self.ai = AStar(self.game.board, "O")  # Initialize the AStar AI with the current game board and AI player 'O'
 
     def run(self):
         self.game.draw_grid(self.game.cell_size)
@@ -26,29 +26,29 @@ class Main:
                     clicked_cell = self.game.get_clicked_cell(mouse_pos)
                     if clicked_cell:
                         row, col = clicked_cell
-                        if self.game.board[row][col] is None:  # Only allow valid player moves
-                            self.game.draw_move(row, col)  # Update game board
-                            self.ai.board[row][col] = "X"  # Update AI's view of the board
-                            self.check_ai_move()  # Check AI move after player move
+                        if self.game.board[row][col] is None:  
+                            self.game.draw_move(row, col)  
+                            self.ai.board[row][col] = "X"  
+                            self.check_ai_move()  
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         self.game.restart_game()
-                        self.ai = AStar(self.game.board, "O")  # Reset AI with the new game
+                        self.ai = AStar(self.game.board, "O") 
                     elif event.key == pygame.K_ESCAPE:
                         self.game.running = False
 
             pygame.display.update()
 
     def check_ai_move(self):
-        if self.game.current_player == "O" and not self.game.winner:  # Ensure it's AI's turn
-            best_move = self.ai.find_best_move()  # Get the best move from the AI
+        if self.game.current_player == "O" and not self.game.winner:
+            best_move = self.ai.find_best_move()  
             if best_move:
                 row, col = best_move
-                if self.game.board[row][col] is None:  # Only make move if the cell is empty
-                    self.game.draw_move(row, col)  # Make AI move
-                    self.game.board[row][col] = "O"  # Update the actual game board after AI's move
-                    self.ai.board[row][col] = "O"  # Update AI's board after its move
-                    if self.game.check_winner():  # Check if AI has won after its move
+                if self.game.board[row][col] is None:  
+                    self.game.draw_move(row, col)  
+                    self.game.board[row][col] = "O"
+                    self.ai.board[row][col] = "O"  
+                    if self.game.check_winner(): 
                         print(f"{self.game.winner} wins!")
 
 if __name__ == "__main__":

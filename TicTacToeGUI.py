@@ -199,15 +199,44 @@ def main():
         pygame.display.update()
     pygame.quit()
 
+
 class AStar:
     def __init__(self, board, player):
         self.board = copy.deepcopy(board)
         self.player = player
         self.opponent = "O" if player == "X" else "X"
 
-    def heuristic(self, board, row, col):
-        pass
-    
+    def heuristic(self, board):
+        
+        move_values = {
+            (1, 1): 75,  
+            (0, 0): 50, (0, 2): 50, (2, 0): 50, (2, 2): 50,  
+            (0, 1): 25, (1, 0): 25, (1, 2): 25, (2, 1): 25  
+        }
+
+        score = 0
+        for row in range(3):
+            for col in range(3):
+                if board[row][col] == self.player:
+                    score += move_values.get((row, col), 0)
+                elif board[row][col] == self.opponent:
+                    score -= move_values.get((row, col), 0)
+
+       
+        for move in self.get_possible_moves(board):
+            row, col = move
+            board[row][col] = self.player
+            if self.check_winner(board, self.player):
+                score += 10  
+            board[row][col] = None
+
+            board[row][col] = self.opponent
+            if self.check_winner(board, self.opponent):
+                score -= 10  
+            board[row][col] = None
+
+        return score
+
     def get_possible_moves(self, board):
         moves = []
         for row in range(len(board)):
@@ -216,25 +245,58 @@ class AStar:
                     moves.append((row, col))
         return moves
 
+    def check_winner(self, board, player):
+        """Check if the player has won."""
+        win_conditions = [
+            [(0, 0), (0, 1), (0, 2)], 
+            [(1, 0), (1, 1), (1, 2)], 
+            [(2, 0), (2, 1), (2, 2)],
+            [(0, 0), (1, 0), (2, 0)], 
+            [(0, 1), (1, 1), (2, 1)], 
+            [(0, 2), (1, 2), (2, 2)],
+            [(0, 0), (1, 1), (2, 2)], 
+            [(0, 2), (1, 1), (2, 0)]
+        ]
+        for condition in win_conditions:
+            if all(board[row][col] == player for row, col in condition):
+                return True
+        return False
+
     def find_best_move(self):
+        """Find the best move for the AI using A*."""
         best_move = None
         best_score = -float('inf')
-        count = 0
-        scores = [0 for i in self.get_possible_moves(self.board)]
 
         for move in self.get_possible_moves(self.board):
             row, col = move
-            new_board = copy.deepcopy(self.board)
-            new_board[row][col] = self.player
+            self.board[row][col] = self.player 
 
-            g = 1 
-            h = self.heuristic(new_board, row, col)
+           
+            if self.check_winner(self.board, self.player):
+                self.board[row][col] = None
+                return move
 
+           
+            self.board[row][col] = self.opponent
+            if self.check_winner(self.board, self.opponent):
+                self.board[row][col] = self.player
+                self.board[row][col] = None
+                return move
+            self.board[row][col] = None
+
+            g = 1
+            h = self.heuristic(self.board)
             f = g + h 
 
-            scores[count] = f
+            if f > best_score:
+                best_score = f
+                best_move = (row, col)
 
-        return max(scores)
+        return best_move
+
+
+
+
 
 
 if __name__ == "__main__":
