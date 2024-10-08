@@ -176,26 +176,49 @@ class AStar:
         self.board_size = board_size
 
     def heuristic(self, board, row, col):
+        def count_in_line(line, player):
+            return sum(1 for r, c in line if board[r][c] == player)
+
+        lines = [
+            [(row, i) for i in range(self.board_size)],  #Row
+            [(i, col) for i in range(self.board_size)],  #Column
+            #Diagonals
+            [(i, i) for i in range(self.board_size)] if row == col else [],
+            [(i, self.board_size - 1 - i) for i in range(self.board_size)] if row + col == self.board_size - 1 else []
+        ]
         board[row][col] = self.ai
         if self.is_winner(board, self.ai):
             board[row][col] = None
-            return 100
-        
+            return 200
+
         board[row][col] = self.player
         if self.is_winner(board, self.player):
             board[row][col] = None
-            return 90
+            return 195
 
         board[row][col] = None
 
+        ai_score = 0
+        player_score = 0
+
+        for line in lines:
+            ai_count = count_in_line(line, self.ai)
+            player_count = count_in_line(line, self.player)
+
+            if ai_count > 0:
+                ai_score = max(ai_score, ai_count * (100 // board_size)) 
+            if player_count > 0:
+                player_score = max(player_score, player_count * (90 // board_size))
+
         if (row, col) == (self.board_size // 2, self.board_size // 2):
-            return 50
+            return ai_score + player_score + 3
 
         corners = [(0, 0), (0, self.board_size - 1), (self.board_size - 1, 0), (self.board_size - 1, self.board_size - 1)]
         if (row, col) in corners:
-            return 40
+            return ai_score + player_score + 2
+        
+        return ai_score + player_score + 1
 
-        return 30
 
     def is_winner(self, board, player):
         for row in board:
@@ -228,13 +251,14 @@ class AStar:
         for move in self.get_possible_moves(self.board):
             row, col = move
 
+            g = 1
             h = self.heuristic(self.board, row, col)
-
-            if h > best_score:
-                best_score = h
+            f = g + h
+            if f > best_score:
+                best_score = f
                 best_move = move
 
-            if best_score == 100:
+            if best_score == 200:
                 break
 
         return best_move

@@ -6,14 +6,14 @@ from TicTacToeGUI import Game, AStar
 board_size = 3
 
 # Colors
-RED = (200, 84, 75)
+RED = (71, 166, 142)
 
 class Main:
     def __init__(self):
         self.game = Game(background_color=RED, board_size=board_size)
         self.ai = AStar(self.game.board, board_size, "O")
 
-    def run(self):
+    def run(self): 
         self.game.draw_grid(self.game.cell_size)
         self.game.display_text("Tic Tac Toe", self.game.screen_width // 2, 75, self.game.title_font)
 
@@ -33,7 +33,7 @@ class Main:
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_r:
                         self.game.restart_game()
-                        self.ai = AStar(self.game.board, "O")
+                        self.ai = AStar(self.game.board, board_size, "O")
                     elif event.key == pygame.K_ESCAPE:
                         self.game.running = False
 
