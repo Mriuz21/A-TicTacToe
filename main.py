@@ -10,11 +10,11 @@ RED = (200, 84, 75)
 
 class Main:
     def __init__(self):
-        self.game = Game(0, 0, background_color=RED)
+        self.game = Game(background_color=RED, board_size=board_size)
         self.ai = AStar(self.game.board, "O")  # Assuming 'O' is the AI player
 
     def run(self):
-        self.game.draw_grid(board_size, self.game.cell_size)
+        self.game.draw_grid(self.game.cell_size)
         self.game.display_text("Tic Tac Toe", self.game.screen_width // 2, 75, self.game.title_font)
 
         while self.game.running:
